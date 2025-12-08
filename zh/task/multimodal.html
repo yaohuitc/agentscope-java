@@ -3,11 +3,11 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="状态与会话管理" href="state.html"><link rel="prev" title="记忆" href="memory.html">
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="结构化输出（Structured Output）" href="structured-output.html"><link rel="prev" title="Session（会话管理）" href="session.html">
         <link rel="prefetch" href="../../_static/logo.svg" as="image">
 
     <link rel="shortcut icon" href="../../_static/logo.svg"><!-- Generated with Sphinx 7.4.7 and Furo 2025.09.25 -->
-        <title>Plan - AgentScope Java</title>
+        <title>多模态（Multimodal） - AgentScope Java</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
@@ -359,10 +359,10 @@
 <li class="toctree-l1"><a class="reference internal" href="rag.html">RAG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hook.html">钩子系统</a></li>
 <li class="toctree-l1"><a class="reference internal" href="memory.html">内存管理</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">计划</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plan.html">计划</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state.html">状态管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="session.html">会话管理</a></li>
-<li class="toctree-l1"><a class="reference internal" href="multimodal.html">多模态</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">多模态</a></li>
 <li class="toctree-l1"><a class="reference internal" href="structured-output.html">结构化输出</a></li>
 <li class="toctree-l1"><a class="reference internal" href="studio.html">Studio</a></li>
 </ul>
@@ -390,7 +390,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/agentscope-ai/agentscope-java/blob/master/docs/zh/task/plan.md?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/agentscope-ai/agentscope-java/blob/master/docs/zh/task/multimodal.md?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -407,142 +407,243 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="plan">
-<h1>Plan<a class="headerlink" href="#plan" title="Link to this heading">¶</a></h1>
-<p>PlanNotebook 为智能体提供计划管理能力，帮助智能体将复杂任务分解为结构化的子任务并逐步执行。</p>
+          <section id="multimodal">
+<h1>多模态（Multimodal）<a class="headerlink" href="#multimodal" title="Link to this heading">¶</a></h1>
+<p>多模态功能使 Agent 能够理解和生成图像、音频、视频等多种媒体内容。</p>
+<hr class="docutils" />
 <section id="id1">
-<h2>启用计划功能<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>核心特性<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>架构统一</strong>：ContentBlock 体系统一处理文本、图像、音频、视频</p></li>
+<li><p><strong>灵活来源</strong>：支持 Base64 编码和 URL 两种媒体加载方式</p></li>
+<li><p><strong>混合消息</strong>：单条消息可包含多种媒体类型和文本</p></li>
+<li><p><strong>模型适配</strong>：自动转换为不同模型 API 的格式要求</p></li>
+</ul>
+</section>
+<hr class="docutils" />
 <section id="id2">
-<h3>方式一：使用默认配置（推荐）<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">ReActAgent</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;Assistant&quot;</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">toolkit</span><span class="p">(</span><span class="n">toolkit</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">enablePlan</span><span class="p">()</span><span class="w">  </span><span class="c1">// 启用计划功能</span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<h2>核心概念<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<section id="contentblock">
+<h3>ContentBlock 架构<a class="headerlink" href="#contentblock" title="Link to this heading">¶</a></h3>
+<p>AgentScope 使用统一的 ContentBlock 体系处理所有类型的内容：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ContentBlock (基类)
+├── TextBlock          - 文本内容
+├── ImageBlock         - 图像内容
+├── AudioBlock         - 音频内容
+├── VideoBlock         - 视频内容
+├── ThinkingBlock      - 推理过程
+├── ToolUseBlock       - 工具调用
+└── ToolResultBlock    - 工具结果
 </pre></div>
 </div>
 </section>
 <section id="id3">
-<h3>方式二：自定义配置<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">PlanNotebook</span><span class="w"> </span><span class="n">planNotebook</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PlanNotebook</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">maxSubtasks</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="w">  </span><span class="c1">// 限制子任务数量</span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
-
-<span class="n">ReActAgent</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;Assistant&quot;</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">toolkit</span><span class="p">(</span><span class="n">toolkit</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">planNotebook</span><span class="p">(</span><span class="n">planNotebook</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
-</pre></div>
-</div>
+<h3>媒体来源<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<p>支持两种媒体来源方式：</p>
+<ul class="simple">
+<li><p><strong>Base64 编码</strong>：将媒体文件编码为字符串（推荐，兼容性好）</p></li>
+<li><p><strong>URL 引用</strong>：通过 HTTP/HTTPS URL 或本地文件路径引用</p></li>
+</ul>
 </section>
 </section>
+<hr class="docutils" />
 <section id="id4">
-<h2>使用示例<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// 创建支持计划的智能体</span>
-<span class="n">ReActAgent</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;PlanAgent&quot;</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">sysPrompt</span><span class="p">(</span><span class="s">&quot;You are a systematic assistant that breaks down complex tasks into plans.&quot;</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">toolkit</span><span class="p">(</span><span class="n">toolkit</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">enablePlan</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<h2>快速开始<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<section id="id5">
+<h3>步骤 1：创建媒体内容块<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.message.*</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.Base64</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.nio.file.Files</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.nio.file.Paths</span><span class="p">;</span>
 
-<span class="c1">// 给智能体分配复杂任务</span>
-<span class="n">Msg</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Msg</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">role</span><span class="p">(</span><span class="n">MsgRole</span><span class="p">.</span><span class="na">USER</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">TextBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">                </span><span class="p">.</span><span class="na">text</span><span class="p">(</span><span class="s">&quot;Build a simple calculator web app with HTML, CSS and JavaScript.&quot;</span><span class="p">)</span>
-<span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">()))</span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="c1">// 图像：Base64 方式（推荐）</span>
+<span class="n">String</span><span class="w"> </span><span class="n">base64Image</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Base64</span><span class="p">.</span><span class="na">getEncoder</span><span class="p">().</span><span class="na">encodeToString</span><span class="p">(</span>
+<span class="w">    </span><span class="n">Files</span><span class="p">.</span><span class="na">readAllBytes</span><span class="p">(</span><span class="n">Paths</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="s">&quot;image.png&quot;</span><span class="p">))</span>
+<span class="p">);</span>
+<span class="n">ImageBlock</span><span class="w"> </span><span class="n">imageBlock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImageBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">source</span><span class="p">(</span><span class="n">Base64Source</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">data</span><span class="p">(</span><span class="n">base64Image</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">mediaType</span><span class="p">(</span><span class="s">&quot;image/png&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">())</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 
-<span class="c1">// 智能体会自动创建计划并逐步执行</span>
-<span class="n">Msg</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">agent</span><span class="p">.</span><span class="na">call</span><span class="p">(</span><span class="n">task</span><span class="p">).</span><span class="na">block</span><span class="p">();</span>
+<span class="c1">// 图像：URL 方式</span>
+<span class="n">ImageBlock</span><span class="w"> </span><span class="n">urlImage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImageBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">source</span><span class="p">(</span><span class="n">URLSource</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">url</span><span class="p">(</span><span class="s">&quot;https://example.com/image.jpg&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">())</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+
+<span class="c1">// 音频</span>
+<span class="n">AudioBlock</span><span class="w"> </span><span class="n">audioBlock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AudioBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">source</span><span class="p">(</span><span class="n">Base64Source</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">data</span><span class="p">(</span><span class="n">base64AudioData</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">mediaType</span><span class="p">(</span><span class="s">&quot;audio/mp3&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">())</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+
+<span class="c1">// 视频</span>
+<span class="n">VideoBlock</span><span class="w"> </span><span class="n">videoBlock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VideoBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">source</span><span class="p">(</span><span class="n">URLSource</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">url</span><span class="p">(</span><span class="s">&quot;https://example.com/video.mp4&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">())</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </pre></div>
 </div>
-</section>
-<section id="id5">
-<h2>计划工具<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
-<p>启用计划功能后，智能体会自动获得以下工具：</p>
-<div class="table-wrapper colwidths-auto docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>工具名称</p></th>
-<th class="head"><p>用途</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">create_plan</span></code></p></td>
-<td><p>创建新计划</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">revise_current_plan</span></code></p></td>
-<td><p>修订当前计划</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">update_subtask_state</span></code></p></td>
-<td><p>更新子任务状态（todo/in_progress/abandoned）</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">finish_subtask</span></code></p></td>
-<td><p>标记子任务为已完成</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">view_subtasks</span></code></p></td>
-<td><p>查看子任务详情</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">finish_plan</span></code></p></td>
-<td><p>完成或放弃整个计划</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">view_historical_plans</span></code></p></td>
-<td><p>查看历史计划</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">recover_historical_plan</span></code></p></td>
-<td><p>恢复历史计划</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>智能体会根据任务自动调用这些工具，无需手动干预。</p>
+<p><strong>支持的 MIME 类型</strong>：</p>
+<ul class="simple">
+<li><p>图像：<code class="docutils literal notranslate"><span class="pre">image/png</span></code>、<code class="docutils literal notranslate"><span class="pre">image/jpeg</span></code>、<code class="docutils literal notranslate"><span class="pre">image/gif</span></code>、<code class="docutils literal notranslate"><span class="pre">image/webp</span></code></p></li>
+<li><p>音频：<code class="docutils literal notranslate"><span class="pre">audio/mp3</span></code>、<code class="docutils literal notranslate"><span class="pre">audio/wav</span></code>、<code class="docutils literal notranslate"><span class="pre">audio/mpeg</span></code></p></li>
+<li><p>视频：<code class="docutils literal notranslate"><span class="pre">video/mp4</span></code>、<code class="docutils literal notranslate"><span class="pre">video/mpeg</span></code></p></li>
+</ul>
 </section>
 <section id="id6">
-<h2>工作流程<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p><strong>创建计划</strong>：智能体分析任务，调用 <code class="docutils literal notranslate"><span class="pre">create_plan</span></code> 创建包含多个子任务的计划</p></li>
-<li><p><strong>执行子任务</strong>：按顺序执行每个子任务</p></li>
-<li><p><strong>更新状态</strong>：完成子任务后调用 <code class="docutils literal notranslate"><span class="pre">finish_subtask</span></code> 更新状态</p></li>
-<li><p><strong>完成计划</strong>：所有子任务完成后调用 <code class="docutils literal notranslate"><span class="pre">finish_plan</span></code></p></li>
-</ol>
-<p>执行过程中，系统会自动在每次推理前注入计划提示，引导智能体按计划执行。</p>
+<h3>步骤 2：构建多模态消息<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// 单张图像消息</span>
+<span class="n">Msg</span><span class="w"> </span><span class="n">singleImageMsg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Msg</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">role</span><span class="p">(</span><span class="n">MsgRole</span><span class="p">.</span><span class="na">USER</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span>
+<span class="w">        </span><span class="n">TextBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">text</span><span class="p">(</span><span class="s">&quot;这张图片是什么颜色？&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">imageBlock</span>
+<span class="w">    </span><span class="p">))</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+
+<span class="c1">// 多张图像消息</span>
+<span class="n">Msg</span><span class="w"> </span><span class="n">multiImageMsg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Msg</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">role</span><span class="p">(</span><span class="n">MsgRole</span><span class="p">.</span><span class="na">USER</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span>
+<span class="w">        </span><span class="n">TextBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">text</span><span class="p">(</span><span class="s">&quot;比较这两张图片&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">ImageBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">source</span><span class="p">(</span><span class="n">base64Source1</span><span class="p">).</span><span class="na">build</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">ImageBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">source</span><span class="p">(</span><span class="n">base64Source2</span><span class="p">).</span><span class="na">build</span><span class="p">()</span>
+<span class="w">    </span><span class="p">))</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+</pre></div>
+</div>
 </section>
+<section id="vision-agent">
+<h3>步骤 3：配置 Vision Agent<a class="headerlink" href="#vision-agent" title="Link to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.ReActAgent</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.formatter.dashscope.DashScopeChatFormatter</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.model.DashScopeChatModel</span><span class="p">;</span>
+
+<span class="n">ReActAgent</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;VisionAssistant&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">sysPrompt</span><span class="p">(</span><span class="s">&quot;你是一个具有视觉能力的 AI 助手。&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">DashScopeChatModel</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">apiKey</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="na">getenv</span><span class="p">(</span><span class="s">&quot;DASHSCOPE_API_KEY&quot;</span><span class="p">))</span>
+<span class="w">        </span><span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;qwen-vl-max&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">stream</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">formatter</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">DashScopeChatFormatter</span><span class="p">())</span><span class="w">  </span><span class="c1">// 必需</span>
+<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">())</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+
+<span class="c1">// 发送请求</span>
+<span class="n">Msg</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">agent</span><span class="p">.</span><span class="na">call</span><span class="p">(</span><span class="n">singleImageMsg</span><span class="p">).</span><span class="na">block</span><span class="p">();</span>
+<span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="na">getTextContent</span><span class="p">());</span>
+</pre></div>
+</div>
+<p><strong>关键配置</strong>：</p>
+<ul class="simple">
+<li><p>DashScope 视觉模型<strong>必须</strong>使用 <code class="docutils literal notranslate"><span class="pre">DashScopeChatFormatter</span></code></p></li>
+<li><p>推荐使用 Base64 编码图像以获得最佳兼容性</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
 <section id="id7">
 <h2>完整示例<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
-<p>参考 <code class="docutils literal notranslate"><span class="pre">examples/src/main/java/io/agentscope/examples/PlanNotebookExample.java</span></code></p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">package</span><span class="w"> </span><span class="nn">io.agentscope.examples</span><span class="p">;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.ReActAgent</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.formatter.dashscope.DashScopeChatFormatter</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.memory.InMemoryMemory</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.message.*</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.model.DashScopeChatModel</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.tool.Toolkit</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.List</span><span class="p">;</span>
+
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">VisionExample</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="kd">throws</span><span class="w"> </span><span class="n">Exception</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">apiKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">getenv</span><span class="p">(</span><span class="s">&quot;DASHSCOPE_API_KEY&quot;</span><span class="p">);</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c1">// 1. 创建 Vision Agent</span>
+<span class="w">        </span><span class="n">ReActAgent</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">            </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;VisionAssistant&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">sysPrompt</span><span class="p">(</span><span class="s">&quot;你是一个具有视觉能力的 AI 助手。&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">DashScopeChatModel</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">                </span><span class="p">.</span><span class="na">apiKey</span><span class="p">(</span><span class="n">apiKey</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;qwen-vl-max&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">stream</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">formatter</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">DashScopeChatFormatter</span><span class="p">())</span>
+<span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">())</span>
+<span class="w">            </span><span class="p">.</span><span class="na">memory</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">InMemoryMemory</span><span class="p">())</span>
+<span class="w">            </span><span class="p">.</span><span class="na">toolkit</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">Toolkit</span><span class="p">())</span>
+<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c1">// 2. 创建多模态消息</span>
+<span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">base64Image</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64pa...&quot;</span><span class="p">;</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="n">Msg</span><span class="w"> </span><span class="n">userMsg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Msg</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">            </span><span class="p">.</span><span class="na">role</span><span class="p">(</span><span class="n">MsgRole</span><span class="p">.</span><span class="na">USER</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span>
+<span class="w">                </span><span class="n">TextBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">text</span><span class="p">(</span><span class="s">&quot;这张图片是什么颜色？&quot;</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">(),</span>
+<span class="w">                </span><span class="n">ImageBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">source</span><span class="p">(</span><span class="n">Base64Source</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">                        </span><span class="p">.</span><span class="na">data</span><span class="p">(</span><span class="n">base64Image</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">.</span><span class="na">mediaType</span><span class="p">(</span><span class="s">&quot;image/png&quot;</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">.</span><span class="na">build</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">()</span>
+<span class="w">            </span><span class="p">))</span>
+<span class="w">            </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c1">// 3. 发送请求并获取响应</span>
+<span class="w">        </span><span class="n">Msg</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">agent</span><span class="p">.</span><span class="na">call</span><span class="p">(</span><span class="n">userMsg</span><span class="p">).</span><span class="na">block</span><span class="p">();</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="n">response</span><span class="p">.</span><span class="na">getTextContent</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </section>
+<hr class="docutils" />
 <section id="id8">
-<h2>配置选项<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>支持的模型<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<section id="dashscope">
+<h3>DashScope（阿里云）<a class="headerlink" href="#dashscope" title="Link to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">DashScopeChatModel</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;qwen-vl-max&quot;</span><span class="p">)</span><span class="w">        </span>
+<span class="w">    </span><span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;qwen-vl-plus&quot;</span><span class="p">)</span><span class="w">       </span>
+<span class="w">    </span><span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;qwen-audio-turbo&quot;</span><span class="p">)</span><span class="w">   </span>
+<span class="w">    </span><span class="p">.</span><span class="na">formatter</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">DashScopeChatFormatter</span><span class="p">())</span><span class="w">  </span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="openai">
+<h3>OpenAI<a class="headerlink" href="#openai" title="Link to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;gpt-4o&quot;</span><span class="p">)</span><span class="w">               </span>
+<span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;gpt-4-vision-preview&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="anthropic">
+<h3>Anthropic<a class="headerlink" href="#anthropic" title="Link to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;claude-3-opus&quot;</span><span class="p">)</span><span class="w">        </span>
+<span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;claude-3-sonnet&quot;</span><span class="p">)</span><span class="w">      </span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
 <section id="id9">
-<h3>限制子任务数量<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">PlanNotebook</span><span class="w"> </span><span class="n">planNotebook</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PlanNotebook</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">maxSubtasks</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="w">  </span><span class="c1">// 最多 10 个子任务</span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
-</pre></div>
-</div>
-</section>
-<section id="id10">
-<h3>自定义存储<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">PlanNotebook</span><span class="w"> </span><span class="n">planNotebook</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PlanNotebook</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">storage</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">InMemoryPlanStorage</span><span class="p">())</span><span class="w">  </span><span class="c1">// 默认内存存储</span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
-</pre></div>
-</div>
-</section>
-<section id="id11">
-<h3>自定义提示生成<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h3>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">PlanNotebook</span><span class="w"> </span><span class="n">planNotebook</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PlanNotebook</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">planToHint</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">DefaultPlanToHint</span><span class="p">())</span><span class="w">  </span><span class="c1">// 自定义计划转提示策略</span>
-<span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
-</pre></div>
-</div>
-</section>
+<h2>更多资源<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>完整示例代码</strong>: <a class="reference internal" href="#../../examples/src/main/java/io/agentscope/examples/VisionExample.java"><span class="xref myst">VisionExample.java</span></a></p></li>
+<li><p><strong>消息机制</strong>: <a class="reference internal" href="#../quickstart/message.md"><span class="xref myst">message.md</span></a> - 了解消息结构</p></li>
+<li><p><strong>模型配置</strong>: <a class="reference internal" href="model.html"><span class="std std-doc">model.md</span></a> - 了解模型配置选项</p></li>
+</ul>
 </section>
 </section>
 
@@ -570,23 +671,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="state.html">
+          <a class="next-page" href="structured-output.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">状态与会话管理</div>
+                <div class="title">结构化输出（Structured Output）</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="memory.html">
+          <a class="prev-page" href="session.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">记忆</div>
+                <div class="title">Session（会话管理）</div>
                 
               </div>
             </a>
@@ -634,22 +735,27 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Plan</a><ul>
-<li><a class="reference internal" href="#id1">启用计划功能</a><ul>
-<li><a class="reference internal" href="#id2">方式一：使用默认配置（推荐）</a></li>
-<li><a class="reference internal" href="#id3">方式二：自定义配置</a></li>
+<li><a class="reference internal" href="#">多模态（Multimodal）</a><ul>
+<li><a class="reference internal" href="#id1">核心特性</a></li>
+<li><a class="reference internal" href="#id2">核心概念</a><ul>
+<li><a class="reference internal" href="#contentblock">ContentBlock 架构</a></li>
+<li><a class="reference internal" href="#id3">媒体来源</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id4">使用示例</a></li>
-<li><a class="reference internal" href="#id5">计划工具</a></li>
-<li><a class="reference internal" href="#id6">工作流程</a></li>
+<li><a class="reference internal" href="#id4">快速开始</a><ul>
+<li><a class="reference internal" href="#id5">步骤 1：创建媒体内容块</a></li>
+<li><a class="reference internal" href="#id6">步骤 2：构建多模态消息</a></li>
+<li><a class="reference internal" href="#vision-agent">步骤 3：配置 Vision Agent</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#id7">完整示例</a></li>
-<li><a class="reference internal" href="#id8">配置选项</a><ul>
-<li><a class="reference internal" href="#id9">限制子任务数量</a></li>
-<li><a class="reference internal" href="#id10">自定义存储</a></li>
-<li><a class="reference internal" href="#id11">自定义提示生成</a></li>
+<li><a class="reference internal" href="#id8">支持的模型</a><ul>
+<li><a class="reference internal" href="#dashscope">DashScope（阿里云）</a></li>
+<li><a class="reference internal" href="#openai">OpenAI</a></li>
+<li><a class="reference internal" href="#anthropic">Anthropic</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#id9">更多资源</a></li>
 </ul>
 </li>
 </ul>
