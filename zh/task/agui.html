@@ -3,11 +3,11 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Session（会话管理）" href="session.html"><link rel="prev" title="Plan" href="plan.html">
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="A2A (Agent2Agent)" href="a2a.html"><link rel="prev" title="Studio（可视化调试）" href="studio.html">
         <link rel="prefetch" href="../../_static/logo.svg" as="image">
 
     <link rel="shortcut icon" href="../../_static/logo.svg"><!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
-        <title>State（状态管理） - AgentScope Java</title>
+        <title>AG-UI 协议集成 - AgentScope Java</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
@@ -360,12 +360,12 @@
 <li class="toctree-l1"><a class="reference internal" href="hook.html">钩子系统</a></li>
 <li class="toctree-l1"><a class="reference internal" href="memory.html">记忆管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plan.html">计划</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">状态管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state.html">状态管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="session.html">会话管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="multimodal.html">多模态</a></li>
 <li class="toctree-l1"><a class="reference internal" href="structured-output.html">结构化输出</a></li>
 <li class="toctree-l1"><a class="reference internal" href="studio.html">Studio</a></li>
-<li class="toctree-l1"><a class="reference internal" href="agui.html">AG-UI 协议</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">AG-UI 协议</a></li>
 <li class="toctree-l1"><a class="reference internal" href="a2a.html">A2A 协议</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">多智能体</span></p>
@@ -392,7 +392,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/agentscope-ai/agentscope-java/blob/master/docs/zh/task/state.md?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/agentscope-ai/agentscope-java/blob/master/docs/zh/task/agui.md?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -409,90 +409,145 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="state">
-<h1>State（状态管理）<a class="headerlink" href="#state" title="Link to this heading">¶</a></h1>
-<p>State 提供组件状态的序列化和反序列化能力，是 Session 持久化的底层基础。</p>
+          <section id="ag-ui">
+<h1>AG-UI 协议集成<a class="headerlink" href="#ag-ui" title="Link to this heading">¶</a></h1>
+<p>AG-UI 是一个前后端通信协议，用于将智能体暴露给 Web 前端。通过 AG-UI，你可以快速将 AgentScope 智能体接入支持该协议的前端框架。</p>
 <hr class="docutils" />
 <section id="id1">
-<h2>核心接口<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
-<p>所有支持状态管理的组件都实现 <code class="docutils literal notranslate"><span class="pre">StateModule</span></code> 接口：</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">StateModule</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">stateDict</span><span class="p">();</span><span class="w">                           </span><span class="c1">// 导出状态</span>
-<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">loadStateDict</span><span class="p">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">strict</span><span class="p">);</span><span class="w">  </span><span class="c1">// 导入状态</span>
-<span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="nf">getComponentName</span><span class="p">();</span><span class="w">                                 </span><span class="c1">// 组件名称</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p><strong>内置支持</strong>：<code class="docutils literal notranslate"><span class="pre">ReActAgent</span></code>、<code class="docutils literal notranslate"><span class="pre">InMemoryMemory</span></code>、<code class="docutils literal notranslate"><span class="pre">Toolkit</span></code>、<code class="docutils literal notranslate"><span class="pre">PlanNotebook</span></code> 等均已实现此接口。</p>
-</section>
-<hr class="docutils" />
+<h2>快速开始<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
 <section id="id2">
-<h2>使用方式<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
-<section id="session-api">
-<h3>推荐：使用 Session API<a class="headerlink" href="#session-api" title="Link to this heading">¶</a></h3>
-<p>大多数场景建议使用 <a class="reference internal" href="session.html"><span class="std std-doc">Session</span></a> 高级 API，自动处理序列化和存储：</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// 保存</span>
-<span class="n">SessionManager</span><span class="p">.</span><span class="na">forSessionId</span><span class="p">(</span><span class="s">&quot;user123&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">.</span><span class="na">withSession</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">JsonSession</span><span class="p">(</span><span class="n">Path</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;sessions&quot;</span><span class="p">)))</span>
-<span class="w">    </span><span class="p">.</span><span class="na">addComponent</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
-<span class="w">    </span><span class="p">.</span><span class="na">saveSession</span><span class="p">();</span>
+<h3>1. 添加依赖<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;dependency&gt;</span>
+<span class="w">    </span><span class="nt">&lt;groupId&gt;</span>io.agentscope<span class="nt">&lt;/groupId&gt;</span>
+<span class="w">    </span><span class="nt">&lt;artifactId&gt;</span>agentscope-agui-spring-boot-starter<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
 
-<span class="c1">// 加载</span>
-<span class="n">SessionManager</span><span class="p">.</span><span class="na">forSessionId</span><span class="p">(</span><span class="s">&quot;user123&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="p">.</span><span class="na">withSession</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">JsonSession</span><span class="p">(</span><span class="n">Path</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;sessions&quot;</span><span class="p">)))</span>
-<span class="w">    </span><span class="p">.</span><span class="na">addComponent</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
-<span class="w">    </span><span class="p">.</span><span class="na">loadIfExists</span><span class="p">();</span>
+<span class="nt">&lt;dependency&gt;</span>
+<span class="w">    </span><span class="nt">&lt;groupId&gt;</span>org.springframework.boot<span class="nt">&lt;/groupId&gt;</span>
+<span class="w">    </span><span class="nt">&lt;artifactId&gt;</span>spring-boot-starter-webflux<span class="nt">&lt;/artifactId&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
 </pre></div>
 </div>
 </section>
 <section id="id3">
-<h3>高级：手动状态管理<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
-<p>需要自定义序列化或与现有存储集成时，可直接使用底层 API：</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// 导出状态</span>
-<span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">agent</span><span class="p">.</span><span class="na">stateDict</span><span class="p">();</span>
+<h3>2. 注册智能体<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="nd">@Configuration</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">AgentConfiguration</span><span class="w"> </span><span class="p">{</span>
 
-<span class="c1">// 序列化（可用任意格式）</span>
-<span class="n">ObjectMapper</span><span class="w"> </span><span class="n">mapper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ObjectMapper</span><span class="p">();</span>
-<span class="n">String</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapper</span><span class="p">.</span><span class="na">writeValueAsString</span><span class="p">(</span><span class="n">state</span><span class="p">);</span>
-
-<span class="c1">// 反序列化并恢复</span>
-<span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">loaded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapper</span><span class="p">.</span><span class="na">readValue</span><span class="p">(</span><span class="n">json</span><span class="p">,</span><span class="w"> </span><span class="n">Map</span><span class="p">.</span><span class="na">class</span><span class="p">);</span>
-<span class="n">agent</span><span class="p">.</span><span class="na">loadStateDict</span><span class="p">(</span><span class="n">loaded</span><span class="p">,</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
-</pre></div>
-</div>
-</section>
-</section>
-<hr class="docutils" />
-<section id="id4">
-<h2>自定义组件<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
-<p>实现 <code class="docutils literal notranslate"><span class="pre">StateModule</span></code> 接口使自定义组件支持持久化：</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">MyComponent</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">StateModule</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">data</span><span class="p">;</span>
-
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">stateDict</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Map</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">);</span>
+<span class="w">    </span><span class="nd">@Autowired</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">configureAgents</span><span class="p">(</span><span class="n">AguiAgentRegistry</span><span class="w"> </span><span class="n">registry</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">registry</span><span class="p">.</span><span class="na">registerFactory</span><span class="p">(</span><span class="s">&quot;default&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">::</span><span class="n">createAgent</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">loadStateDict</span><span class="p">(</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">state</span><span class="p">,</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="n">strict</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">String</span><span class="p">)</span><span class="w"> </span><span class="n">state</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
-
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">getComponentName</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;myComponent&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">Agent</span><span class="w"> </span><span class="nf">createAgent</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">                </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;Assistant&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">sysPrompt</span><span class="p">(</span><span class="s">&quot;你是一个有帮助的助手。&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">DashScopeChatModel</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">                        </span><span class="p">.</span><span class="na">apiKey</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="na">getenv</span><span class="p">(</span><span class="s">&quot;DASHSCOPE_API_KEY&quot;</span><span class="p">))</span>
+<span class="w">                        </span><span class="p">.</span><span class="na">modelName</span><span class="p">(</span><span class="s">&quot;qwen3-max&quot;</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">.</span><span class="na">stream</span><span class="p">(</span><span class="kc">true</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">.</span><span class="na">build</span><span class="p">())</span>
+<span class="w">                </span><span class="p">.</span><span class="na">memory</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">InMemoryMemory</span><span class="p">())</span>
+<span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </section>
-<hr class="docutils" />
+<section id="id4">
+<h3>3. 配置<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># application.yml</span>
+<span class="nt">agentscope</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">agui</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">path-prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/agui</span>
+<span class="w">    </span><span class="nt">cors-enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">server-side-memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># 启用服务端会话保持</span>
+</pre></div>
+</div>
+</section>
 <section id="id5">
-<h2>相关文档<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h3>4. 启动并测试<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 启动应用后测试</span>
+curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8080/agui/run<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;threadId&quot;:&quot;t1&quot;,&quot;runId&quot;:&quot;r1&quot;,&quot;messages&quot;:[{&quot;id&quot;:&quot;m1&quot;,&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;你好&quot;}]}&#39;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id6">
+<h2>前端接入<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<section id="ag-ui-client">
+<h3>使用 &#64;ag-ui/client（推荐）<a class="headerlink" href="#ag-ui-client" title="Link to this heading">¶</a></h3>
+<p>AG-UI 官方客户端库，适用于原生 JavaScript/TypeScript 项目：</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">script</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;module&quot;</span><span class="p">&gt;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">HttpAgent</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;https://esm.sh/@ag-ui/client&#39;</span><span class="p">;</span>
+
+<span class="c1">// 创建 Agent 实例</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">HttpAgent</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;http://localhost:8080/agui/run&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">threadId</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;thread-&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span>
+<span class="p">});</span>
+
+<span class="c1">// 订阅消息变化</span>
+<span class="nx">agent</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">onMessagesChanged</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Messages:&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">agent</span><span class="p">.</span><span class="nx">messages</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">});</span>
+
+<span class="c1">// 添加用户消息</span>
+<span class="nx">agent</span><span class="p">.</span><span class="nx">addMessage</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;msg-1&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">role</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;user&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">content</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;你好&#39;</span>
+<span class="p">});</span>
+
+<span class="c1">// 运行智能体</span>
+<span class="k">await</span><span class="w"> </span><span class="nx">agent</span><span class="p">.</span><span class="nx">runAgent</span><span class="p">({</span><span class="w"> </span><span class="nx">runId</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;run-1&#39;</span><span class="w"> </span><span class="p">});</span>
+
+<span class="c1">// 中断运行</span>
+<span class="c1">// agent.abortRun();</span>
+<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="copilotkit">
+<h3>使用 CopilotKit<a class="headerlink" href="#copilotkit" title="Link to this heading">¶</a></h3>
+<p>如果你使用 React，可以直接接入 <a class="reference external" href="https://copilotkit.ai">CopilotKit</a>：</p>
+<div class="highlight-typescript notranslate"><div class="highlight"><pre><span></span><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">CopilotKit</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@copilotkit/react-core&quot;</span><span class="p">;</span>
+
+<span class="kd">function</span><span class="w"> </span><span class="nx">App</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="nx">CopilotKit</span><span class="w"> </span><span class="nx">runtimeUrl</span><span class="o">=</span><span class="s2">&quot;http://localhost:8080/agui&quot;</span><span class="o">&gt;</span>
+<span class="w">      </span><span class="o">&lt;</span><span class="nx">YourApp</span><span class="w"> </span><span class="o">/&gt;</span>
+<span class="w">    </span><span class="o">&lt;</span><span class="err">/CopilotKit&gt;</span>
+<span class="w">  </span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id7">
+<h2>示例项目<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<p>完整示例见 <a class="reference external" href="https://github.com/agentscope-ai/agentscope-java/tree/main/agentscope-examples/agui">agentscope-examples/agui</a>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DASHSCOPE_API_KEY</span><span class="o">=</span>your-key
+<span class="nb">cd</span><span class="w"> </span>agentscope-examples/agui
+mvn<span class="w"> </span>spring-boot:run
+</pre></div>
+</div>
+<p>访问 http://localhost:8080 查看演示。</p>
+</section>
+<hr class="docutils" />
+<section id="id8">
+<h2>更多资源<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><a class="reference internal" href="session.html"><span class="std std-doc">Session</span></a> - 高级会话管理 API</p></li>
-<li><p><a class="reference internal" href="memory.html"><span class="std std-doc">Memory</span></a> - 记忆管理</p></li>
+<li><p><a class="reference external" href="https://www.npmjs.com/package/&#64;ag-ui/client">&#64;ag-ui/client 文档</a></p></li>
+<li><p><a class="reference external" href="https://docs.ag-ui.com">AG-UI 协议文档</a></p></li>
+<li><p><a class="reference external" href="https://copilotkit.ai">CopilotKit</a></p></li>
 </ul>
 </section>
 </section>
@@ -521,23 +576,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="session.html">
+          <a class="next-page" href="a2a.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Session（会话管理）</div>
+                <div class="title">A2A (Agent2Agent)</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="plan.html">
+          <a class="prev-page" href="studio.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Plan</div>
+                <div class="title">Studio（可视化调试）</div>
                 
               </div>
             </a>
@@ -585,15 +640,21 @@
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">State（状态管理）</a><ul>
-<li><a class="reference internal" href="#id1">核心接口</a></li>
-<li><a class="reference internal" href="#id2">使用方式</a><ul>
-<li><a class="reference internal" href="#session-api">推荐：使用 Session API</a></li>
-<li><a class="reference internal" href="#id3">高级：手动状态管理</a></li>
+<li><a class="reference internal" href="#">AG-UI 协议集成</a><ul>
+<li><a class="reference internal" href="#id1">快速开始</a><ul>
+<li><a class="reference internal" href="#id2">1. 添加依赖</a></li>
+<li><a class="reference internal" href="#id3">2. 注册智能体</a></li>
+<li><a class="reference internal" href="#id4">3. 配置</a></li>
+<li><a class="reference internal" href="#id5">4. 启动并测试</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id4">自定义组件</a></li>
-<li><a class="reference internal" href="#id5">相关文档</a></li>
+<li><a class="reference internal" href="#id6">前端接入</a><ul>
+<li><a class="reference internal" href="#ag-ui-client">使用 &#64;ag-ui/client（推荐）</a></li>
+<li><a class="reference internal" href="#copilotkit">使用 CopilotKit</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id7">示例项目</a></li>
+<li><a class="reference internal" href="#id8">更多资源</a></li>
 </ul>
 </li>
 </ul>
