@@ -3,14 +3,14 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="RAG (Retrieval-Augmented Generation)" href="rag.html"><link rel="prev" title="Tool" href="tool.html">
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Agent Skills" href="agent-skill.html"><link rel="prev" title="Tool" href="tool.html">
         <link rel="prefetch" href="../../_static/logo.svg" as="image">
 
     <link rel="shortcut icon" href="../../_static/logo.svg"><!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
         <title>MCP (Model Context Protocol) - AgentScope Java</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
-    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
@@ -327,6 +327,7 @@
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tool.html">Tool System</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Model Context Protocol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent-skill.html">Agent Skill</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rag.html">RAG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hook.html">Hook System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="memory.html">Memory Management</a></li>
@@ -342,6 +343,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../multi-agent/pipeline.html">Pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../multi-agent/msghub.html">MsgHub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../multi-agent/agent-as-tool.html">Agent as Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../multi-agent/multiagent-debate.html">Multi-Agent Debate</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">快速开始</span></p>
@@ -356,6 +358,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/model.html">模型集成</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/tool.html">工具系统</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/mcp.html">MCP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/task/agent-skill.html">智能体技能</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/rag.html">RAG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/hook.html">钩子系统</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/memory.html">记忆管理</a></li>
@@ -372,6 +375,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/multi-agent/pipeline.html">管道</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/multi-agent/msghub.html">MsgHub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/multi-agent/agent-as-tool.html">Agent as Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/multi-agent/multiagent-debate.html">多智能体辩论</a></li>
 </ul>
 
@@ -526,6 +530,7 @@
 <div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">sseClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;remote-mcp&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">sseTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/sse&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">header</span><span class="p">(</span><span class="s">&quot;Authorization&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Bearer &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">apiToken</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">timeout</span><span class="p">(</span><span class="n">Duration</span><span class="p">.</span><span class="na">ofSeconds</span><span class="p">(</span><span class="mi">60</span><span class="p">))</span>
 <span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
 <span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
@@ -538,6 +543,7 @@
 <div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">httpClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;http-mcp&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">streamableHttpTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/http&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">header</span><span class="p">(</span><span class="s">&quot;X-API-Key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">apiKey</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
 <span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
 </pre></div>
@@ -623,6 +629,36 @@
 </pre></div>
 </div>
 </section>
+<section id="query-parameters">
+<h3>Query Parameters<a class="headerlink" href="#query-parameters" title="Link to this heading">¶</a></h3>
+<p>Add URL query parameters for HTTP transports:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// Single parameter</span>
+<span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;mcp&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">sseTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/sse&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue1&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue2&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
+
+<span class="c1">// Multiple parameters at once</span>
+<span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;mcp&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">streamableHttpTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/http&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParams</span><span class="p">(</span><span class="n">Map</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;queryKey1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryKey2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue2&quot;</span><span class="p">))</span>
+<span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
+
+<span class="c1">// Merge with existing URL parameters (additional params take precedence)</span>
+<span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;mcp&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">sseTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/sse?version=v1&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue&quot;</span><span class="p">)</span><span class="w">  </span><span class="c1">// Result: ?version=v1&amp;queryKey=queryValue</span>
+<span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p><strong>Note</strong>: Query parameters only apply to HTTP transports (SSE and HTTP). They are ignored for StdIO transport.</p>
+</div></blockquote>
+</section>
 <section id="synchronous-vs-asynchronous-clients">
 <h3>Synchronous vs Asynchronous Clients<a class="headerlink" href="#synchronous-vs-asynchronous-clients" title="Link to this heading">¶</a></h3>
 <div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// Asynchronous client (recommended)</span>
@@ -695,12 +731,12 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="rag.html">
+          <a class="next-page" href="agent-skill.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">RAG (Retrieval-Augmented Generation)</div>
+                <div class="title">Agent Skills</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -724,7 +760,7 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
             <div class="last-updated">
-              Last updated on 2025-12-23</div>
+              Last updated on 2026-01-30</div>
           </div>
           <div class="right-details">
             <div class="icons">
@@ -784,6 +820,7 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
 <li><a class="reference internal" href="#configuration-options">Configuration Options</a><ul>
 <li><a class="reference internal" href="#timeouts">Timeouts</a></li>
 <li><a class="reference internal" href="#http-headers">HTTP Headers</a></li>
+<li><a class="reference internal" href="#query-parameters">Query Parameters</a></li>
 <li><a class="reference internal" href="#synchronous-vs-asynchronous-clients">Synchronous vs Asynchronous Clients</a></li>
 </ul>
 </li>
@@ -814,7 +851,7 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../../_static/togglebutton.js?v=1ae7504c"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>

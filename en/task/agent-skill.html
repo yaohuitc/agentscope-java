@@ -3,11 +3,11 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Memory" href="memory.html"><link rel="prev" title="RAG (Retrieval-Augmented Generation)" href="rag.html">
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="RAG (Retrieval-Augmented Generation)" href="rag.html"><link rel="prev" title="MCP (Model Context Protocol)" href="mcp.html">
         <link rel="prefetch" href="../../_static/logo.svg" as="image">
 
     <link rel="shortcut icon" href="../../_static/logo.svg"><!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
-        <title>Hook - AgentScope Java</title>
+        <title>Agent Skills - AgentScope Java</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=9c3e77be" />
@@ -327,9 +327,9 @@
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tool.html">Tool System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mcp.html">Model Context Protocol</a></li>
-<li class="toctree-l1"><a class="reference internal" href="agent-skill.html">Agent Skill</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Agent Skill</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rag.html">RAG</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Hook System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hook.html">Hook System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="memory.html">Memory Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plan.html">Planning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state.html">State Management</a></li>
@@ -396,7 +396,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="https://github.com/agentscope-ai/agentscope-java/blob/master/docs/en/task/hook.md?plain=true" title="View this page">
+  <a class="muted-link" href="https://github.com/agentscope-ai/agentscope-java/blob/master/docs/en/task/agent-skill.md?plain=true" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -413,259 +413,233 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="hook">
-<h1>Hook<a class="headerlink" href="#hook" title="Link to this heading">¶</a></h1>
-<p>Hooks provide extension points to monitor and modify agent behavior at specific execution stages.</p>
-<section id="hook-overview">
-<h2>Hook Overview<a class="headerlink" href="#hook-overview" title="Link to this heading">¶</a></h2>
-<p>AgentScope Java uses a <strong>unified event model</strong> where all hooks implement the <code class="docutils literal notranslate"><span class="pre">onEvent(HookEvent)</span></code> method:</p>
+          <section id="agent-skills">
+<h1>Agent Skills<a class="headerlink" href="#agent-skills" title="Link to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>Agent Skills are modular skill packages that extend agent capabilities. Each Skill contains instructions, metadata, and optional resources (such as scripts, reference documentation, examples, etc.), which agents will automatically use for relevant tasks.</p>
+<p><strong>Reference</strong>: <a class="reference external" href="https://platform.claude.com/docs/zh-CN/agents-and-tools/agent-skills/overview">Claude Agent Skills Official Documentation</a></p>
+</section>
+<section id="core-features">
+<h2>Core Features<a class="headerlink" href="#core-features" title="Link to this heading">¶</a></h2>
+<section id="progressive-disclosure-mechanism">
+<h3>Progressive Disclosure Mechanism<a class="headerlink" href="#progressive-disclosure-mechanism" title="Link to this heading">¶</a></h3>
+<p>Adopts <strong>three-stage on-demand loading</strong> to optimize context: Initially loads only metadata (~100 tokens/Skill) → AI loads complete instructions when needed (&lt;5k tokens) → On-demand access to resource files. Tools are also progressively disclosed, activated only when the Skill is in use.</p>
+<p><strong>Workflow:</strong> User Query → AI Identifies Relevant Skill → Calls Tools to Load Content and Activate Bound Tools → On-Demand Resource Access → Task Completion</p>
+</section>
+<section id="adaptive-design">
+<h3>Adaptive Design<a class="headerlink" href="#adaptive-design" title="Link to this heading">¶</a></h3>
+<p>We have further abstracted skills so that their discovery and content loading are no longer dependent on the file system. Instead, the LLM discovers and loads skill content and resources through tools. At the same time, to maintain compatibility with the existing skill ecosystem and resources, skills are still organized according to file system structure for their content and resources.</p>
+<p><strong>Organize your skill content and resources just like organizing a skill directory in a file system!</strong></p>
+<p>Taking the <a class="reference internal" href="#skill-structure"><span class="xref myst">Skill Structure</span></a> as an example, this directory-structured skill is represented in our system as:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">AgentSkill</span><span class="w"> </span><span class="n">skill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AgentSkill</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;data_analysis&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">description</span><span class="p">(</span><span class="s">&quot;Use this skill when analyzing data, calculating statistics, or generating reports&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">skillContent</span><span class="p">(</span><span class="s">&quot;# Data Analysis\n...&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">addResource</span><span class="p">(</span><span class="s">&quot;references/api-doc.md&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;# API Reference\n...&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">addResource</span><span class="p">(</span><span class="s">&quot;references/best-practices.md&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;# Best Practices\n...&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">addResource</span><span class="p">(</span><span class="s">&quot;examples/example1.java&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;public class Example1 {\n...\n}&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">addResource</span><span class="p">(</span><span class="s">&quot;scripts/process.py&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;def process(data): ...\n&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="skill-structure">
+<h3>Skill Structure<a class="headerlink" href="#skill-structure" title="Link to this heading">¶</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>skill-name/
+├── SKILL.md          # Required: Entry file with YAML frontmatter and instructions
+├── references/       # Optional: Detailed reference documentation
+│   ├── api-doc.md
+│   └── best-practices.md
+├── examples/         # Optional: Working examples
+│   └── example1.java
+└── scripts/          # Optional: Executable scripts
+    └── process.py
+</pre></div>
+</div>
+</section>
+<section id="skill-md-format-specification">
+<h3>SKILL.md Format Specification<a class="headerlink" href="#skill-md-format-specification" title="Link to this heading">¶</a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">skill-name</span><span class="w">                    </span><span class="c1"># Required: Skill name (lowercase letters, numbers, underscores)</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">This skill should be used when...</span><span class="w">  </span><span class="c1"># Required: Trigger description, explaining when to use</span>
+<span class="nn">---</span>
+
+<span class="c1"># Skill Name</span>
+
+<span class="c1">## Feature Overview</span>
+<span class="p p-Indicator">[</span><span class="nv">Detailed description of the skill&#39;s functionality</span><span class="p p-Indicator">]</span>
+
+<span class="c1">## Usage Instructions</span>
+<span class="p p-Indicator">[</span><span class="nv">Usage steps and best practices</span><span class="p p-Indicator">]</span>
+
+<span class="c1">## Available Resources</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">references/api-doc.md</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">API reference documentation</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">scripts/process.py</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Data processing script</span>
+</pre></div>
+</div>
+<p><strong>Required Fields:</strong></p>
 <ul class="simple">
-<li><p><strong>Event-based</strong>: All agent activities generate events</p></li>
-<li><p><strong>Type-safe</strong>: Pattern matching on event types</p></li>
-<li><p><strong>Priority-ordered</strong>: Hooks execute by priority (lower value = higher priority)</p></li>
-<li><p><strong>Modifiable</strong>: Some events allow modification of execution context</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> - Skill name (lowercase letters, numbers, underscores)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> - Skill functionality and usage scenarios, helps AI determine when to use</p></li>
 </ul>
 </section>
-<section id="supported-events">
-<h2>Supported Events<a class="headerlink" href="#supported-events" title="Link to this heading">¶</a></h2>
-<div class="table-wrapper colwidths-auto docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Event Type</p></th>
-<th class="head"><p>Timing</p></th>
-<th class="head"><p>Modifiable</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>PreCallEvent</p></td>
-<td><p>Before agent call</p></td>
-<td><p>❌</p></td>
-<td><p>Before agent starts processing (notification-only)</p></td>
-</tr>
-<tr class="row-odd"><td><p>PostCallEvent</p></td>
-<td><p>After agent call</p></td>
-<td><p>✅</p></td>
-<td><p>After agent completes response (can modify final message)</p></td>
-</tr>
-<tr class="row-even"><td><p>PreReasoningEvent</p></td>
-<td><p>Before reasoning</p></td>
-<td><p>✅</p></td>
-<td><p>Before LLM reasoning (can modify input messages)</p></td>
-</tr>
-<tr class="row-odd"><td><p>PostReasoningEvent</p></td>
-<td><p>After reasoning</p></td>
-<td><p>✅</p></td>
-<td><p>After LLM reasoning (can modify reasoning result)</p></td>
-</tr>
-<tr class="row-even"><td><p>ReasoningChunkEvent</p></td>
-<td><p>During reasoning stream</p></td>
-<td><p>❌</p></td>
-<td><p>Each chunk of streaming reasoning (notification-only)</p></td>
-</tr>
-<tr class="row-odd"><td><p>PreActingEvent</p></td>
-<td><p>Before tool execution</p></td>
-<td><p>✅</p></td>
-<td><p>Before tool execution (can modify tool parameters)</p></td>
-</tr>
-<tr class="row-even"><td><p>PostActingEvent</p></td>
-<td><p>After tool execution</p></td>
-<td><p>✅</p></td>
-<td><p>After tool execution (can modify tool result)</p></td>
-</tr>
-<tr class="row-odd"><td><p>ActingChunkEvent</p></td>
-<td><p>During tool stream</p></td>
-<td><p>❌</p></td>
-<td><p>Tool execution progress chunks (notification-only)</p></td>
-</tr>
-<tr class="row-even"><td><p>ErrorEvent</p></td>
-<td><p>On error</p></td>
-<td><p>❌</p></td>
-<td><p>When errors occur (notification-only)</p></td>
-</tr>
-</tbody>
-</table>
-</div>
 </section>
-<section id="creating-hooks">
-<h2>Creating Hooks<a class="headerlink" href="#creating-hooks" title="Link to this heading">¶</a></h2>
-<section id="basic-hook">
-<h3>Basic Hook<a class="headerlink" href="#basic-hook" title="Link to this heading">¶</a></h3>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.Hook</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.HookEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.PreCallEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.PostCallEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">reactor.core.publisher.Mono</span><span class="p">;</span>
-
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">LoggingHook</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Hook</span><span class="w"> </span><span class="p">{</span>
-
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">HookEvent</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mono</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">onEvent</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">PreCallEvent</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Agent starting: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">event</span><span class="p">.</span><span class="na">getAgent</span><span class="p">().</span><span class="na">getName</span><span class="p">());</span>
-<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">        </span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">PostCallEvent</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Agent finished: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">event</span><span class="p">.</span><span class="na">getAgent</span><span class="p">().</span><span class="na">getName</span><span class="p">());</span>
-<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">        </span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h2>
+<section id="create-a-skill">
+<h3>1. Create a Skill<a class="headerlink" href="#create-a-skill" title="Link to this heading">¶</a></h3>
+<section id="method-1-using-builder">
+<h4>Method 1: Using Builder<a class="headerlink" href="#method-1-using-builder" title="Link to this heading">¶</a></h4>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">AgentSkill</span><span class="w"> </span><span class="n">skill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AgentSkill</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;data_analysis&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">description</span><span class="p">(</span><span class="s">&quot;Use when analyzing data...&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">skillContent</span><span class="p">(</span><span class="s">&quot;# Data Analysis\n...&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">addResource</span><span class="p">(</span><span class="s">&quot;references/formulas.md&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;# Common Formulas\n...&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">source</span><span class="p">(</span><span class="s">&quot;custom&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </pre></div>
 </div>
 </section>
-<section id="hook-with-priority">
-<h3>Hook with Priority<a class="headerlink" href="#hook-with-priority" title="Link to this heading">¶</a></h3>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">HighPriorityHook</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Hook</span><span class="w"> </span><span class="p">{</span>
+<section id="method-2-create-from-markdown">
+<h4>Method 2: Create from Markdown<a class="headerlink" href="#method-2-create-from-markdown" title="Link to this heading">¶</a></h4>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// Prepare SKILL.md content</span>
+<span class="n">String</span><span class="w"> </span><span class="n">skillMd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">---</span>
+<span class="s">name: data_analysis</span>
+<span class="s">description: Use this skill when analyzing data, calculating statistics, or generating reports</span>
+<span class="s">---</span>
+<span class="s"># Skill Name</span>
+<span class="s">Content...</span>
+<span class="s">&quot;&quot;&quot;</span><span class="p">;</span>
 
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">priority</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span><span class="w">  </span><span class="c1">// Lower number = higher priority (default is 100)</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="c1">// Prepare resource files (optional)</span>
+<span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">resources</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Map</span><span class="p">.</span><span class="na">of</span><span class="p">(</span>
+<span class="w">    </span><span class="s">&quot;references/formulas.md&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;# Common Formulas\n...&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;examples/sample.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;name,value\nA,100\nB,200&quot;</span>
+<span class="p">);</span>
 
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">HookEvent</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mono</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">onEvent</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="c1">// This hook executes before hooks with priority &gt; 10</span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<span class="c1">// Create Skill</span>
+<span class="n">AgentSkill</span><span class="w"> </span><span class="n">skill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SkillUtil</span><span class="p">.</span><span class="na">createFrom</span><span class="p">(</span><span class="n">skillMd</span><span class="p">,</span><span class="w"> </span><span class="n">resources</span><span class="p">);</span>
 </pre></div>
 </div>
 </section>
-<section id="modifying-events">
-<h3>Modifying Events<a class="headerlink" href="#modifying-events" title="Link to this heading">¶</a></h3>
-<p>Some events allow modification:</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.Hook</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.HookEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.PreReasoningEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.message.Msg</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.message.MsgRole</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.message.TextBlock</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">reactor.core.publisher.Mono</span><span class="p">;</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.ArrayList</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.List</span><span class="p">;</span>
-
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">PromptEnhancingHook</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Hook</span><span class="w"> </span><span class="p">{</span>
-
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">HookEvent</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mono</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">onEvent</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">PreReasoningEvent</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Msg</span><span class="o">&gt;</span><span class="w"> </span><span class="n">messages</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="na">getInputMessages</span><span class="p">());</span>
-<span class="w">            </span><span class="n">messages</span><span class="p">.</span><span class="na">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">Msg</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">role</span><span class="p">(</span><span class="n">MsgRole</span><span class="p">.</span><span class="na">SYSTEM</span><span class="p">)</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">TextBlock</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">text</span><span class="p">(</span><span class="s">&quot;Think step by step.&quot;</span><span class="p">).</span><span class="na">build</span><span class="p">()))</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">());</span>
-<span class="w">            </span><span class="n">e</span><span class="p">.</span><span class="na">setInputMessages</span><span class="p">(</span><span class="n">messages</span><span class="p">);</span>
-<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<section id="method-3-direct-construction">
+<h4>Method 3: Direct Construction<a class="headerlink" href="#method-3-direct-construction" title="Link to this heading">¶</a></h4>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">AgentSkill</span><span class="w"> </span><span class="n">skill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AgentSkill</span><span class="p">(</span>
+<span class="w">    </span><span class="s">&quot;data_analysis&quot;</span><span class="p">,</span><span class="w">                    </span><span class="c1">// name</span>
+<span class="w">    </span><span class="s">&quot;Use when analyzing data...&quot;</span><span class="p">,</span><span class="w">       </span><span class="c1">// description</span>
+<span class="w">    </span><span class="s">&quot;# Data Analysis\n...&quot;</span><span class="p">,</span><span class="w">             </span><span class="c1">// skillContent</span>
+<span class="w">    </span><span class="n">resources</span><span class="w">                            </span><span class="c1">// resources (can be null)</span>
+<span class="p">);</span>
 </pre></div>
 </div>
 </section>
 </section>
-<section id="configure-hooks-in-agent">
-<h2>Configure Hooks in Agent<a class="headerlink" href="#configure-hooks-in-agent" title="Link to this heading">¶</a></h2>
-<p>Register hooks when building an agent:</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.ReActAgent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">java.util.List</span><span class="p">;</span>
+<section id="integrate-with-reactagent">
+<h3>2. Integrate with ReActAgent<a class="headerlink" href="#integrate-with-reactagent" title="Link to this heading">¶</a></h3>
+<section id="using-skillbox">
+<h4>Using SkillBox<a class="headerlink" href="#using-skillbox" title="Link to this heading">¶</a></h4>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Toolkit</span><span class="w"> </span><span class="n">toolkit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Toolkit</span><span class="p">();</span>
+
+<span class="n">SkillBox</span><span class="w"> </span><span class="n">skillBox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SkillBox</span><span class="p">(</span><span class="n">toolkit</span><span class="p">);</span>
+<span class="n">skillBox</span><span class="p">.</span><span class="na">registerAgentSkill</span><span class="p">(</span><span class="n">skill1</span><span class="p">);</span>
 
 <span class="n">ReActAgent</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">        </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;Assistant&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;DataAnalyst&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">toolkit</span><span class="p">(</span><span class="n">toolkit</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="na">hooks</span><span class="p">(</span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span>
-<span class="w">                </span><span class="k">new</span><span class="w"> </span><span class="n">LoggingHook</span><span class="p">(),</span>
-<span class="w">                </span><span class="k">new</span><span class="w"> </span><span class="n">HighPriorityHook</span><span class="p">(),</span>
-<span class="w">                </span><span class="k">new</span><span class="w"> </span><span class="n">PromptEnhancingHook</span><span class="p">()</span>
-<span class="w">        </span><span class="p">))</span>
+<span class="w">        </span><span class="p">.</span><span class="na">skillBox</span><span class="p">(</span><span class="n">skillBox</span><span class="p">)</span><span class="w">  </span><span class="c1">// Automatically registers skill tools and hook</span>
+<span class="w">        </span><span class="p">.</span><span class="na">memory</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">InMemoryMemory</span><span class="p">())</span>
 <span class="w">        </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </pre></div>
 </div>
-<p>Hooks are immutable after agent construction.</p>
 </section>
-<section id="hook-examples">
-<h2>Hook Examples<a class="headerlink" href="#hook-examples" title="Link to this heading">¶</a></h2>
-<section id="monitoring-tool-execution">
-<h3>Monitoring Tool Execution<a class="headerlink" href="#monitoring-tool-execution" title="Link to this heading">¶</a></h3>
-<p>Track tool calls:</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.Hook</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.HookEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.PostActingEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.PreActingEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.message.TextBlock</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">reactor.core.publisher.Mono</span><span class="p">;</span>
+</section>
+<section id="use-skills">
+<h3>3. Use Skills<a class="headerlink" href="#use-skills" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+<section id="simplified-integration">
+<h2>Simplified Integration<a class="headerlink" href="#simplified-integration" title="Link to this heading">¶</a></h2>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">SkillBox</span><span class="w"> </span><span class="n">skillBox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SkillBox</span><span class="p">();</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ToolMonitorHook</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Hook</span><span class="w"> </span><span class="p">{</span>
+<span class="n">skillBox</span><span class="p">.</span><span class="na">registerAgentSkill</span><span class="p">(</span><span class="n">dataSkill</span><span class="p">);</span>
 
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">HookEvent</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mono</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">onEvent</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span>
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">PreActingEvent</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Calling tool: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getToolUse</span><span class="p">().</span><span class="na">getName</span><span class="p">());</span>
-<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Arguments: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getToolUse</span><span class="p">().</span><span class="na">getInput</span><span class="p">());</span>
-<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">        </span><span class="p">}</span>
-
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">PostActingEvent</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">resultText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getToolResult</span><span class="p">().</span><span class="na">getOutput</span><span class="p">().</span><span class="na">stream</span><span class="p">()</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">block</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">block</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">TextBlock</span><span class="p">)</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">map</span><span class="p">(</span><span class="n">block</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">((</span><span class="n">TextBlock</span><span class="p">)</span><span class="w"> </span><span class="n">block</span><span class="p">).</span><span class="na">getText</span><span class="p">())</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">findFirst</span><span class="p">()</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">orElse</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">);</span>
-<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Tool result: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">resultText</span><span class="p">);</span>
-<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">        </span><span class="p">}</span>
-
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<span class="n">ReActAgent</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;Assistant&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">skillBox</span><span class="p">(</span><span class="n">skillBox</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </pre></div>
 </div>
 </section>
-<section id="monitoring-errors">
-<h3>Monitoring Errors<a class="headerlink" href="#monitoring-errors" title="Link to this heading">¶</a></h3>
-<p>Monitor and handle errors:</p>
-<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.ErrorEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.Hook</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.core.hook.HookEvent</span><span class="p">;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">reactor.core.publisher.Mono</span><span class="p">;</span>
+<section id="advanced-features">
+<h2>Advanced Features<a class="headerlink" href="#advanced-features" title="Link to this heading">¶</a></h2>
+<section id="feature-1-progressive-disclosure-of-tools">
+<h3>Feature 1: Progressive Disclosure of Tools<a class="headerlink" href="#feature-1-progressive-disclosure-of-tools" title="Link to this heading">¶</a></h3>
+<p>Bind Tools to Skills for on-demand activation. Avoids context pollution from pre-registering all Tools, only passing relevant Tools to LLM when the Skill is actively used.</p>
+<p><strong>Example Code</strong>:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">Toolkit</span><span class="w"> </span><span class="n">toolkit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Toolkit</span><span class="p">();</span>
+<span class="n">SkillBox</span><span class="w"> </span><span class="n">skillBox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">SkillBox</span><span class="p">(</span><span class="n">toolkit</span><span class="p">);</span>
 
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ErrorHandlingHook</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">Hook</span><span class="w"> </span><span class="p">{</span>
+<span class="n">AgentSkill</span><span class="w"> </span><span class="n">dataSkill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AgentSkill</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;data_analysis&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">description</span><span class="p">(</span><span class="s">&quot;Comprehensive data analysis capabilities&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">skillContent</span><span class="p">(</span><span class="s">&quot;# Data Analysis\n...&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 
-<span class="w">    </span><span class="nd">@Override</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="o">&lt;</span><span class="n">T</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">HookEvent</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mono</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">onEvent</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="n">AgentTool</span><span class="w"> </span><span class="n">loadDataTool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">AgentTool</span><span class="p">(...);</span>
 
-<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">event</span><span class="w"> </span><span class="k">instanceof</span><span class="w"> </span><span class="n">ErrorEvent</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">err</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Error in agent: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getAgent</span><span class="p">().</span><span class="na">getName</span><span class="p">());</span>
-<span class="w">            </span><span class="n">System</span><span class="p">.</span><span class="na">err</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Error message: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getError</span><span class="p">().</span><span class="na">getMessage</span><span class="p">());</span>
-<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">        </span><span class="p">}</span>
+<span class="n">skillBox</span><span class="p">.</span><span class="na">registration</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">skill</span><span class="p">(</span><span class="n">dataSkill</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">tool</span><span class="p">(</span><span class="n">loadDataTool</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">apply</span><span class="p">();</span>
 
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Mono</span><span class="p">.</span><span class="na">just</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<span class="n">ReActAgent</span><span class="w"> </span><span class="n">agent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ReActAgent</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="na">name</span><span class="p">(</span><span class="s">&quot;Assistant&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">toolkit</span><span class="p">(</span><span class="n">toolkit</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">skillBox</span><span class="p">(</span><span class="n">skillBox</span><span class="p">)</span>
+<span class="w">    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </pre></div>
 </div>
 </section>
-</section>
-<section id="complete-example">
-<h2>Complete Example<a class="headerlink" href="#complete-example" title="Link to this heading">¶</a></h2>
-<p>See the complete Hook example:</p>
+<section id="feature-2-skill-persistence-storage">
+<h3>Feature 2: Skill Persistence Storage<a class="headerlink" href="#feature-2-skill-persistence-storage" title="Link to this heading">¶</a></h3>
+<p><strong>Why is this feature needed?</strong></p>
+<p>Skills need to remain available after application restart, or be shared across different environments. Persistence storage supports:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">agentscope-examples/quickstart/src/main/java/io/agentscope/examples/quickstart/HookExample.java</span></code></p></li>
+<li><p>File system storage</p></li>
+<li><p>Database storage (not yet implemented)</p></li>
+<li><p>Git repository (not yet implemented)</p></li>
 </ul>
-<p>Run the example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>agentscope-examples/quickstart
-mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<span class="o">=</span><span class="s2">&quot;io.agentscope.examples.quickstart.HookExample&quot;</span>
+<p><strong>Example Code</strong>:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">AgentSkillRepository</span><span class="w"> </span><span class="n">repo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FileSystemSkillRepository</span><span class="p">(</span><span class="n">Path</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;./skills&quot;</span><span class="p">));</span>
+<span class="n">repo</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">List</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">skill</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+<span class="n">AgentSkill</span><span class="w"> </span><span class="n">loaded</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">repo</span><span class="p">.</span><span class="na">getSkill</span><span class="p">(</span><span class="s">&quot;data_analysis&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
+<p>This protection applies to all repository operations: <code class="docutils literal notranslate"><span class="pre">getSkill()</span></code>, <code class="docutils literal notranslate"><span class="pre">save()</span></code>, <code class="docutils literal notranslate"><span class="pre">delete()</span></code>, and <code class="docutils literal notranslate"><span class="pre">skillExists()</span></code>.</p>
+<p>For detailed security guidelines, please refer to <a class="reference external" href="https://platform.claude.com/docs/zh-CN/agents-and-tools/agent-skills/overview#%E5%AE%89%E5%85%A8%E8%80%83%E8%99%91">Claude Agent Skills Security Considerations</a>.</p>
+</section>
+<section id="performance-optimization-recommendations">
+<h3>Performance Optimization Recommendations<a class="headerlink" href="#performance-optimization-recommendations" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Control SKILL.md Size</strong>: Keep under 5k tokens, recommended 1.5-2k tokens</p></li>
+<li><p><strong>Organize Resources Properly</strong>: Place detailed documentation in references/ rather than SKILL.md</p></li>
+<li><p><strong>Regularly Clean Versions</strong>: Use <code class="docutils literal notranslate"><span class="pre">clearSkillOldVersions()</span></code> to clean up old versions no longer needed</p></li>
+<li><p><strong>Avoid Duplicate Registration</strong>: Leverage duplicate registration protection mechanism; same Skill object with multiple Tools won’t create duplicate versions</p></li>
+</ol>
+</section>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://platform.claude.com/docs/zh-CN/agents-and-tools/agent-skills/overview">Claude Agent Skills Official Documentation</a> - Complete concept and architecture introduction</p></li>
+<li><p><a class="reference internal" href="tool.html"><span class="std std-doc">Tool Usage Guide</span></a> - Tool system usage methods</p></li>
+<li><p><a class="reference internal" href="#./agent.md"><span class="xref myst">Agent Configuration</span></a> - Agent configuration and usage</p></li>
+</ul>
 </section>
 </section>
 
@@ -693,23 +667,23 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="memory.html">
+          <a class="next-page" href="rag.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Memory</div>
+                <div class="title">RAG (Retrieval-Augmented Generation)</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="rag.html">
+          <a class="prev-page" href="mcp.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">RAG (Retrieval-Augmented Generation)</div>
+                <div class="title">MCP (Model Context Protocol)</div>
                 
               </div>
             </a>
@@ -757,22 +731,37 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Hook</a><ul>
-<li><a class="reference internal" href="#hook-overview">Hook Overview</a></li>
-<li><a class="reference internal" href="#supported-events">Supported Events</a></li>
-<li><a class="reference internal" href="#creating-hooks">Creating Hooks</a><ul>
-<li><a class="reference internal" href="#basic-hook">Basic Hook</a></li>
-<li><a class="reference internal" href="#hook-with-priority">Hook with Priority</a></li>
-<li><a class="reference internal" href="#modifying-events">Modifying Events</a></li>
+<li><a class="reference internal" href="#">Agent Skills</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#core-features">Core Features</a><ul>
+<li><a class="reference internal" href="#progressive-disclosure-mechanism">Progressive Disclosure Mechanism</a></li>
+<li><a class="reference internal" href="#adaptive-design">Adaptive Design</a></li>
+<li><a class="reference internal" href="#skill-structure">Skill Structure</a></li>
+<li><a class="reference internal" href="#skill-md-format-specification">SKILL.md Format Specification</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#configure-hooks-in-agent">Configure Hooks in Agent</a></li>
-<li><a class="reference internal" href="#hook-examples">Hook Examples</a><ul>
-<li><a class="reference internal" href="#monitoring-tool-execution">Monitoring Tool Execution</a></li>
-<li><a class="reference internal" href="#monitoring-errors">Monitoring Errors</a></li>
+<li><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li><a class="reference internal" href="#create-a-skill">1. Create a Skill</a><ul>
+<li><a class="reference internal" href="#method-1-using-builder">Method 1: Using Builder</a></li>
+<li><a class="reference internal" href="#method-2-create-from-markdown">Method 2: Create from Markdown</a></li>
+<li><a class="reference internal" href="#method-3-direct-construction">Method 3: Direct Construction</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#complete-example">Complete Example</a></li>
+<li><a class="reference internal" href="#integrate-with-reactagent">2. Integrate with ReActAgent</a><ul>
+<li><a class="reference internal" href="#using-skillbox">Using SkillBox</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#use-skills">3. Use Skills</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#simplified-integration">Simplified Integration</a></li>
+<li><a class="reference internal" href="#advanced-features">Advanced Features</a><ul>
+<li><a class="reference internal" href="#feature-1-progressive-disclosure-of-tools">Feature 1: Progressive Disclosure of Tools</a></li>
+<li><a class="reference internal" href="#feature-2-skill-persistence-storage">Feature 2: Skill Persistence Storage</a></li>
+<li><a class="reference internal" href="#performance-optimization-recommendations">Performance Optimization Recommendations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 </ul>
